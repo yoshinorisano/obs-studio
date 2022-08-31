@@ -3,8 +3,12 @@
 
 #include <QObject>
 
+class EditorWidget;
+
 class VST3Plugin : public QObject {
 	Q_OBJECT
+
+	EditorWidget *editorWidget = nullptr;
 
 public slots:
 	void openEditor();

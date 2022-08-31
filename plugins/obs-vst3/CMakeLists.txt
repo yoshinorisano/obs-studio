@@ -16,7 +16,8 @@ target_include_directories(
 
 target_sources(
   obs-vst3
-  PRIVATE obs-vst3.cpp VST3Plugin.cpp VST3Plugin.h)
+  PRIVATE obs-vst3.cpp VST3Plugin.cpp EditorWidget.cpp
+          VST3Plugin.h EditorWidget.h)
 
 target_link_libraries(obs-vst3 PRIVATE OBS::libobs Qt::Widgets)
 
