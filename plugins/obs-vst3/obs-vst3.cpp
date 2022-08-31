@@ -1,3 +1,4 @@
+#include "VST3Plugin.h"
 #include <obs-module.h>
 
 #define OPEN_VST3_SETTINGS "open_vst3_settings"
@@ -15,6 +16,10 @@ MODULE_EXPORT const char *obs_module_description(void)
 static bool open_editor_button_clicked(obs_properties_t *props,
 				       obs_property_t *property, void *data)
 {
+	VST3Plugin *vst3Plugin = (VST3Plugin *)data;
+
+	QMetaObject::invokeMethod(vst3Plugin, "openEditor");
+
 	return true;
 }
 
@@ -26,8 +31,8 @@ static const char *vst3_name(void *unused)
 
 static void *vst3_create(obs_data_t *settings, obs_source_t *filter)
 {
-	long *dummy = new long();
-	return dummy;
+	VST3Plugin *vst3Plugin = new VST3Plugin();
+	return vst3Plugin;
 }
 
 static void vst3_destroy(void *data)
