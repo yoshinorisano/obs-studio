@@ -1,12 +1,21 @@
 #include <obs-module.h>
 
+#define OPEN_VST3_SETTINGS "open_vst3_settings"
+
 #define PLUG_IN_NAME "VST 3.x Plug-in"
+#define OPEN_VST3_TEXT "Open Plug-in Interface"
 
 OBS_DECLARE_MODULE()
 OBS_MODULE_USE_DEFAULT_LOCALE("obs3-vst", "en-US")
 MODULE_EXPORT const char *obs_module_description(void)
 {
 	return "VST 3.x Plug-in filter";
+}
+
+static bool open_editor_button_clicked(obs_properties_t *props,
+				       obs_property_t *property, void *data)
+{
+	return true;
 }
 
 static const char *vst3_name(void *unused)
@@ -17,7 +26,8 @@ static const char *vst3_name(void *unused)
 
 static void *vst3_create(obs_data_t *settings, obs_source_t *filter)
 {
-	return NULL;
+	long *dummy = new long();
+	return dummy;
 }
 
 static void vst3_destroy(void *data)
@@ -38,7 +48,10 @@ static struct obs_audio_data *vst3_filter_audio(void *data,
 
 static obs_properties_t *vst3_properties(void *data)
 {
-	return NULL;
+	obs_properties_t *props = obs_properties_create();
+	obs_properties_add_button(props, OPEN_VST3_SETTINGS, OPEN_VST3_TEXT,
+				  open_editor_button_clicked);
+	return props;
 }
 
 static void vst3_save(void *data, obs_data_t *settings)
