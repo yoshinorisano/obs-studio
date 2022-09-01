@@ -5,6 +5,9 @@
 #include <QObject>
 #include <Windows.h>
 
+// TODO
+#include "pluginterfaces/base/ipluginbase.h"
+
 class EditorWidget;
 
 class VST3Plugin : public QObject {
@@ -13,7 +16,8 @@ class VST3Plugin : public QObject {
 	EditorWidget *editorWidget = nullptr;
 	std::string pluginPath;
 
-	void *loadEffect();
+	Steinberg::IPluginFactory *pluginFactory = nullptr;
+	Steinberg::IPluginFactory *loadEffect();
 
 	HINSTANCE dllHandle = nullptr;
 

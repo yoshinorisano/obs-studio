@@ -3,6 +3,9 @@
 
 #include <QWidget>
 
+// TODO
+#include "pluginterfaces/base/ipluginbase.h"
+
 class VST3Plugin;
 
 class EditorWidget : public QWidget {
@@ -10,7 +13,7 @@ class EditorWidget : public QWidget {
 
 public:
 	EditorWidget(QWidget *parent, VST3Plugin *plugin);
-	void buildEffectContainer();
+	void buildEffectContainer(Steinberg::IPluginFactory *pluginFactory);
 };
 
 #endif // OBS_STUDIO_EDITORDIALOG_H

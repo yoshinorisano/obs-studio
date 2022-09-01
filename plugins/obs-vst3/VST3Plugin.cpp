@@ -7,20 +7,17 @@
 
 // TODO
 #include "pluginterfaces/base/ipluginbase.h"
-#include "pluginterfaces/vst/ivstcomponent.h"
-#include "pluginterfaces/vst/ivsteditcontroller.h"
 
 typedef bool(PLUGIN_API *InitDllProc)();
 
-static const char* VST3_CATEGORY_CONTROLLER_CLASS = "Component Controller Class";
 
 void VST3Plugin::openEditor()
 {
 	editorWidget = new EditorWidget(nullptr, this);
-	editorWidget->buildEffectContainer();
+	editorWidget->buildEffectContainer(pluginFactory);
 }
 
-void *VST3Plugin::loadEffect()
+Steinberg::IPluginFactory *VST3Plugin::loadEffect()
 {
 	wchar_t *wpath;
 	os_utf8_to_wcs_ptr(pluginPath.c_str(), 0, &wpath);
@@ -47,6 +44,8 @@ void *VST3Plugin::loadEffect()
 
 	Steinberg::IPluginFactory *pluginFactory = factoryProc();
 
+	return pluginFactory;
+	/*
 	Steinberg::PFactoryInfo info;
 	pluginFactory->getFactoryInfo(&info);
 
@@ -66,14 +65,19 @@ void *VST3Plugin::loadEffect()
 			if (result != Steinberg::kResultOk) {
 				return nullptr;
 			}
+			//Steinberg::IPlugView *view = editController->createView("editor");
+			//view->attached()
+
+
 		}
 	}
 
 	return nullptr;
+	*/
 }
 
 void VST3Plugin::loadEffectFromPath(std::string path)
 {
 	pluginPath = path;
-	loadEffect();
+	pluginFactory = loadEffect();
 }
