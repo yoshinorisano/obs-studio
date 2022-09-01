@@ -9,6 +9,7 @@
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/gui/iplugview.h"
 
+static const char *VST3_CATEGORY_AUDIO_MODULE_CLASS = "Audio Module Class";
 static const char *VST3_CATEGORY_CONTROLLER_CLASS =
 	"Component Controller Class";
 
@@ -33,6 +34,10 @@ void EditorWidget::buildEffectContainer(Steinberg::IPluginFactory *pluginFactory
 		pluginFactory->getClassInfo(i, &classInfo);
 		blog(LOG_INFO, "obs-vst3: class: %s, category: %s",
 		     classInfo.name, classInfo.category);
+		if (strncmp(classInfo.category, VST3_CATEGORY_AUDIO_MODULE_CLASS,
+			    strlen(VST3_CATEGORY_AUDIO_MODULE_CLASS)) == 0) {
+			plugin->setEffectName(classInfo.name);
+		}
 		if (strncmp(classInfo.category, VST3_CATEGORY_CONTROLLER_CLASS,
 			    strlen(VST3_CATEGORY_CONTROLLER_CLASS)) == 0) {
 			Steinberg::tresult result = 0;

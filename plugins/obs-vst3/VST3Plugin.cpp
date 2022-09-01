@@ -14,7 +14,6 @@ typedef bool(PLUGIN_API *InitDllProc)();
 
 VST3Plugin::VST3Plugin(obs_source_t *sourceContext) : sourceContext{sourceContext}
 {
-	strcpy(effectName, "Unknown"); // TODO
 }
 
 void VST3Plugin::openEditor()
@@ -109,4 +108,10 @@ void VST3Plugin::getSourceNames()
 	/* Only call inside the vst_filter_audio function! */
 	sourceName = obs_source_get_name(obs_filter_get_parent(sourceContext));
 	filterName = obs_source_get_name(sourceContext);
+}
+
+// TODO: Bad hack
+void VST3Plugin::setEffectName(const char* effectName)
+{
+	strcpy(this->effectName, effectName);
 }

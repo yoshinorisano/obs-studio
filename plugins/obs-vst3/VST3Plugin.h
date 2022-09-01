@@ -32,6 +32,7 @@ public:
 	VST3Plugin(obs_source_t *sourceContext);
 	void loadEffectFromPath(std::string path);
 	void getSourceNames();
+	void setEffectName(const char *effectName);
 
 public slots:
 	void openEditor();
