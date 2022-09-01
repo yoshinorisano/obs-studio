@@ -15,6 +15,7 @@ void VST3Plugin::openEditor()
 {
 	editorWidget = new EditorWidget(nullptr, this);
 	editorWidget->buildEffectContainer(pluginFactory);
+	editorWidget->show();
 }
 
 Steinberg::IPluginFactory *VST3Plugin::loadEffect()
