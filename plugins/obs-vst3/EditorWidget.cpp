@@ -6,12 +6,9 @@
 #include <QGridLayout>
 
 // TODO
+#include "pluginterfaces/vst/ivstaudioprocessor.h"
 #include "pluginterfaces/vst/ivsteditcontroller.h"
 #include "pluginterfaces/gui/iplugview.h"
-
-static const char *VST3_CATEGORY_AUDIO_MODULE_CLASS = "Audio Module Class";
-static const char *VST3_CATEGORY_CONTROLLER_CLASS =
-	"Component Controller Class";
 
 
 EditorWidget::EditorWidget(QWidget *parent, VST3Plugin *plugin)
@@ -34,12 +31,12 @@ void EditorWidget::buildEffectContainer(Steinberg::IPluginFactory *pluginFactory
 		pluginFactory->getClassInfo(i, &classInfo);
 		blog(LOG_INFO, "obs-vst3: class: %s, category: %s",
 		     classInfo.name, classInfo.category);
-		if (strncmp(classInfo.category, VST3_CATEGORY_AUDIO_MODULE_CLASS,
-			    strlen(VST3_CATEGORY_AUDIO_MODULE_CLASS)) == 0) {
+		if (strncmp(classInfo.category, kVstAudioEffectClass,
+			    strlen(kVstAudioEffectClass)) == 0) {
 			plugin->setEffectName(classInfo.name);
 		}
-		if (strncmp(classInfo.category, VST3_CATEGORY_CONTROLLER_CLASS,
-			    strlen(VST3_CATEGORY_CONTROLLER_CLASS)) == 0) {
+		if (strncmp(classInfo.category, kVstComponentControllerClass,
+			    strlen(kVstComponentControllerClass)) == 0) {
 			Steinberg::tresult result = 0;
 			Steinberg::Vst::IEditController *editController =
 				nullptr;
@@ -76,7 +73,8 @@ void EditorWidget::buildEffectContainer(Steinberg::IPluginFactory *pluginFactory
 			setLayout(layout);
 			layout->addWidget(widget);
 
-			Steinberg::IPlugView *view = editController->createView("editor");
+			Steinberg::IPlugView *view = editController->createView(
+				Steinberg::Vst::ViewType::kEditor);
 
 			Steinberg::ViewRect size;
 			result = view->getSize(&size);
