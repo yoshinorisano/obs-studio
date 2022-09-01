@@ -18,6 +18,9 @@ static bool open_editor_button_clicked(obs_properties_t *props,
 {
 	VST3Plugin *vst3Plugin = (VST3Plugin *)data;
 
+	// TODO
+	vst3Plugin->loadEffectFromPath(std::string("C:\\Program Files\\Common Files\\VST3\\OrilRiver.vst3"));
+
 	QMetaObject::invokeMethod(vst3Plugin, "openEditor");
 
 	return true;

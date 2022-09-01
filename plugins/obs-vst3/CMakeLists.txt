@@ -12,7 +12,8 @@ set_target_properties(
 
 target_include_directories(
   obs-vst3 PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-                  ${CMAKE_CURRENT_BINARY_DIR})
+                  ${CMAKE_CURRENT_BINARY_DIR}
+                  "C:\\VST_SDK\\vst3sdk") # TODO
 
 target_sources(
   obs-vst3
