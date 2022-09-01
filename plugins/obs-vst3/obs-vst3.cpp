@@ -34,7 +34,7 @@ static const char *vst3_name(void *unused)
 
 static void *vst3_create(obs_data_t *settings, obs_source_t *filter)
 {
-	VST3Plugin *vst3Plugin = new VST3Plugin();
+	VST3Plugin *vst3Plugin = new VST3Plugin(filter);
 	return vst3Plugin;
 }
 
@@ -51,6 +51,15 @@ static void vst3_update(void* data, obs_data_t* settings)
 static struct obs_audio_data *vst3_filter_audio(void *data,
 					       struct obs_audio_data *audio)
 {
+	VST3Plugin *vstPlugin = (VST3Plugin *)data;
+
+	/*
+	 * OBS can only guarantee getting the filter source's parent and own name
+	 * in this call, so we grab it and return the results for processing
+	 * by the EditorWidget.
+	 */
+	vstPlugin->getSourceNames();
+
 	return NULL;
 }
 

@@ -1,6 +1,8 @@
 #include "VST3Plugin.h"
 #include "EditorWidget.h"
 
+#include "obs.h"
+
 #include <util/bmem.h>
 #include <util/platform.h>
 #include <windows.h>
@@ -10,11 +12,30 @@
 
 typedef bool(PLUGIN_API *InitDllProc)();
 
+VST3Plugin::VST3Plugin(obs_source_t *sourceContext) : sourceContext{sourceContext}
+{
+	strcpy(effectName, "Unknown"); // TODO
+}
 
 void VST3Plugin::openEditor()
 {
 	editorWidget = new EditorWidget(nullptr, this);
 	editorWidget->buildEffectContainer(pluginFactory);
+
+	if (sourceName.empty()) {
+		sourceName = "VST 3.x";
+	}
+
+	if (filterName.empty()) {
+		editorWidget->setWindowTitle(QString("%1 - %2").arg(
+			sourceName.c_str(), effectName));
+	} else {
+		editorWidget->setWindowTitle(
+			QString("%1: %2 - %3")
+				.arg(sourceName.c_str(),
+					filterName.c_str(), effectName));
+	}
+
 	editorWidget->show();
 }
 
@@ -81,4 +102,11 @@ void VST3Plugin::loadEffectFromPath(std::string path)
 {
 	pluginPath = path;
 	pluginFactory = loadEffect();
+}
+
+void VST3Plugin::getSourceNames()
+{
+	/* Only call inside the vst_filter_audio function! */
+	sourceName = obs_source_get_name(obs_filter_get_parent(sourceContext));
+	filterName = obs_source_get_name(sourceContext);
 }
