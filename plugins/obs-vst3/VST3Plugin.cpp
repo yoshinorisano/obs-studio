@@ -7,8 +7,12 @@
 
 // TODO
 #include "pluginterfaces/base/ipluginbase.h"
+#include "pluginterfaces/vst/ivstcomponent.h"
+#include "pluginterfaces/vst/ivsteditcontroller.h"
 
 typedef bool(PLUGIN_API *InitDllProc)();
+
+static const char* VST3_CATEGORY_CONTROLLER_CLASS = "Component Controller Class";
 
 void VST3Plugin::openEditor()
 {
@@ -47,6 +51,23 @@ void *VST3Plugin::loadEffect()
 	pluginFactory->getFactoryInfo(&info);
 
 	blog(LOG_INFO, "obs-vst3: plugin vendor: %s, url: %s", info.vendor, info.url);
+
+	int count = pluginFactory->countClasses();
+	for (int i = 0; i < count; i++) {
+		Steinberg::PClassInfo classInfo;
+		pluginFactory->getClassInfo(i, &classInfo);
+		blog(LOG_INFO, "obs-vst3: class: %s, category: %s", classInfo.name,
+		     classInfo.category);
+		if (strncmp(classInfo.category,
+			    VST3_CATEGORY_CONTROLLER_CLASS, strlen(VST3_CATEGORY_CONTROLLER_CLASS)) == 0) {
+			Steinberg::tresult result = 0;
+			Steinberg::Vst::IEditController *editController = nullptr;
+			result = pluginFactory->createInstance(classInfo.cid, Steinberg::Vst::IEditController::iid, (void **)&editController);
+			if (result != Steinberg::kResultOk) {
+				return nullptr;
+			}
+		}
+	}
 
 	return nullptr;
 }
