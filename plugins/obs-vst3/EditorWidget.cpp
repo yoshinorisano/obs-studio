@@ -33,6 +33,43 @@ void EditorWidget::buildEffectContainer(Steinberg::IPluginFactory *pluginFactory
 		     classInfo.name, classInfo.category);
 		if (strncmp(classInfo.category, kVstAudioEffectClass,
 			    strlen(kVstAudioEffectClass)) == 0) {
+			Steinberg::tresult result = 0;
+			Steinberg::Vst::IComponent *component = nullptr;
+			result = pluginFactory->createInstance(classInfo.cid, Steinberg::Vst::IComponent::iid, (void **)&component);
+			if (result != Steinberg::kResultOk) {
+				return;
+			}
+			Steinberg::FUnknown *hostContext = nullptr; // TODO
+			result = component->initialize(hostContext);
+			if (result != Steinberg::kResultOk) {
+				return;
+			}
+
+			Steinberg::Vst::IAudioProcessor *audioProcessor = nullptr;
+			result = component->queryInterface(
+				Steinberg::Vst::IAudioProcessor::iid,
+				(void **)&audioProcessor);
+			if (result != Steinberg::kResultOk) {
+				return;
+			}
+
+			audioProcessor->setProcessing(false);
+			component->setActive(false);
+
+			Steinberg::Vst::ProcessSetup setup;
+			setup.processMode = Steinberg::Vst::kRealtime;
+			setup.symbolicSampleSize = Steinberg::Vst::kSample32;
+			setup.maxSamplesPerBlock = 512;
+			setup.sampleRate = 44100.0;
+
+			result = audioProcessor->setupProcessing(setup);
+			if (result != Steinberg::kResultOk) {
+				return;
+			}
+
+			component->setActive(true);
+			audioProcessor->setProcessing(true);
+
 			plugin->setEffectName(classInfo.name);
 		}
 		if (strncmp(classInfo.category, kVstComponentControllerClass,
