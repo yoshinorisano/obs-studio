@@ -9,6 +9,8 @@
 
 // TODO
 #include "pluginterfaces/base/ipluginbase.h"
+#include "pluginterfaces/vst/ivstaudioprocessor.h"
+#include "pluginterfaces/vst/ivsteditcontroller.h"
 
 class EditorWidget;
 
@@ -19,8 +21,7 @@ class VST3Plugin : public QObject {
 	obs_source_t *sourceContext;
 	std::string pluginPath;
 
-	Steinberg::IPluginFactory *pluginFactory = nullptr;
-	Steinberg::IPluginFactory *loadEffect();
+	void loadEffect();
 
 	std::string sourceName;
 	std::string filterName;
@@ -28,11 +29,23 @@ class VST3Plugin : public QObject {
 
 	HINSTANCE dllHandle = nullptr;
 
+	Steinberg::Vst::IAudioProcessor *audioProcessor;
+	Steinberg::Vst::IEditController *editController;
+
 public:
 	VST3Plugin(obs_source_t *sourceContext);
 	void loadEffectFromPath(std::string path);
 	void getSourceNames();
-	void setEffectName(const char *effectName);
+
+	Steinberg::Vst::IAudioProcessor *getAudioProcessor()
+	{
+		return audioProcessor;
+	}
+
+	Steinberg::Vst::IEditController *getEditController()
+	{
+		return editController;
+	}
 
 public slots:
 	void openEditor();

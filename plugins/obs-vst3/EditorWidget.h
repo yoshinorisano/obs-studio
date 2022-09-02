@@ -17,7 +17,7 @@ class EditorWidget : public QWidget {
 
 public:
 	EditorWidget(QWidget *parent, VST3Plugin *plugin);
-	void buildEffectContainer(Steinberg::IPluginFactory *pluginFactory);
+	void buildEffectContainer();
 };
 
 #endif // OBS_STUDIO_EDITORDIALOG_H
