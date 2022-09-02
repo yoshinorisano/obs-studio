@@ -221,40 +221,56 @@ obs_audio_data *VST3Plugin::process(struct obs_audio_data *audio)
 	assert(audioProcessor != nullptr);
 	Steinberg::tresult result = 0;
 
-	silenceChannel(outputs, 2, 512);
+	uint passes = (audio->frames + BLOCK_SIZE - 1) / BLOCK_SIZE;
+	uint extra = audio->frames % BLOCK_SIZE;
+	for (uint pass = 0; pass < passes; pass++) {
+		uint frames = pass == passes - 1 && extra ? extra : BLOCK_SIZE;
 
-	float *adata[2] = {(float *)audio->data[0], (float *)audio->data[1]};
+		silenceChannel(outputs, numChannels, BLOCK_SIZE);
 
-	Steinberg::Vst::AudioBusBuffers inputBuffers;
-	inputBuffers.numChannels = 2;
-	inputBuffers.channelBuffers32 = (Steinberg::Vst::Sample32 **)adata;
+		for (size_t d = 0; d < numChannels; d++) {
+			if (d < MAX_AV_PLANES && audio->data[d] != nullptr) {
+				channelrefs[d] = ((float *)audio->data[d]) +
+						 (pass * BLOCK_SIZE);
+			} else {
+				channelrefs[d] = inputs[d];
+			}
+		}
 
-	Steinberg::Vst::AudioBusBuffers outputBuffers;
-	outputBuffers.numChannels = 2;
-	outputBuffers.channelBuffers32 = (Steinberg::Vst::Sample32 **)outputs;
+		Steinberg::Vst::AudioBusBuffers inputBuffers;
+		inputBuffers.numChannels = (Steinberg::int32)numChannels;
+		inputBuffers.channelBuffers32 =
+			(Steinberg::Vst::Sample32 **)channelrefs;
 
-	Steinberg::Vst::ProcessData data;
-	data.processMode = Steinberg::Vst::ProcessModes::kRealtime;
-	data.symbolicSampleSize = Steinberg::Vst::SymbolicSampleSizes::kSample32;
-	data.numSamples = 512;
-	data.numInputs = 1;
-	data.numOutputs = 1;
-	data.inputs = &inputBuffers;
-	data.outputs = &outputBuffers;
+		Steinberg::Vst::AudioBusBuffers outputBuffers;
+		outputBuffers.numChannels = (Steinberg::int32)numChannels;
+		outputBuffers.channelBuffers32 =
+			(Steinberg::Vst::Sample32 **)outputs;
 
-	result = audioProcessor->process(data);
-	if (result != Steinberg::kResultOk) {
-		return nullptr; // TODO
-	}
-	
-	for (size_t c = 0; c < 2; c++) {
-		if (audio->data[c]) {
-			for (size_t i = 0; i < 512; i++) {
-				adata[c][i] = outputs[c][i];
+		Steinberg::Vst::ProcessData data;
+		data.processMode = Steinberg::Vst::ProcessModes::kRealtime;
+		data.symbolicSampleSize =
+			Steinberg::Vst::SymbolicSampleSizes::kSample32;
+		data.numSamples = frames;
+		data.numInputs = 1;
+		data.numOutputs = 1;
+		data.inputs = &inputBuffers;
+		data.outputs = &outputBuffers;
+
+		result = audioProcessor->process(data);
+		if (result != Steinberg::kResultOk) {
+			return nullptr; // TODO
+		}
+
+		// only copy back the channels the plugin may have generated
+		for (size_t c = 0; c < numChannels && c < MAX_AV_PLANES; c++) {
+			if (audio->data[c]) {
+				for (size_t i = 0; i < frames; i++) {
+					channelrefs[c][i] = outputs[c][i];
+				}
 			}
 		}
 	}
-	
 
 	return audio;
 }
