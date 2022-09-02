@@ -48,6 +48,13 @@ void VST3Plugin::openEditor()
 	editorWidget->show();
 }
 
+void VST3Plugin::closeEditor()
+{
+	if (editorWidget) {
+		editorWidget->close();
+	}
+}
+
 void VST3Plugin::loadEffect()
 {
 	wchar_t *wpath;

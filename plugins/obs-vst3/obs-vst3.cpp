@@ -48,6 +48,7 @@ static void *vst3_create(obs_data_t *settings, obs_source_t *filter)
 static void vst3_destroy(void *data)
 {
 	VST3Plugin *vst3Plugin = (VST3Plugin *)data;
+	QMetaObject::invokeMethod(vst3Plugin, "closeEditor");
 	vst3Plugin->deleteLater();
 }
 

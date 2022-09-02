@@ -63,6 +63,7 @@ public:
 
 public slots:
 	void openEditor();
+	void closeEditor();
 };
 
 #endif // OBS_STUDIO_VST3PLUGIN_H
