@@ -47,6 +47,11 @@ void EditorWidget::buildEffectContainer(Steinberg::IPluginFactory *pluginFactory
 			if (result != Steinberg::kResultOk) {
 				return;
 			}
+			Steinberg::FUnknown *hostContext = nullptr; // TODO
+			result = editController->initialize(hostContext);
+			if (result != Steinberg::kResultOk) {
+				return;
+			}
 
 
 			WNDCLASSEXW wcex{sizeof(wcex)};
