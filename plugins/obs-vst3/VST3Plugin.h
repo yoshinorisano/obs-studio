@@ -1,6 +1,8 @@
 #ifndef OBS_STUDIO_VST3PLUGIN_H
 #define OBS_STUDIO_VST3PLUGIN_H
 
+#define BLOCK_SIZE 512
+
 #include <string>
 #include <QObject>
 #include <Windows.h>
@@ -21,6 +23,13 @@ class VST3Plugin : public QObject {
 	obs_source_t *sourceContext;
 	std::string pluginPath;
 
+	float **inputs = nullptr;
+	float **outputs = nullptr;
+	float **channelrefs = nullptr;
+	size_t numChannels = 0;
+	void createChannelBuffers(size_t count);
+	void cleanupChannelBuffers();
+
 	void loadEffect();
 
 	std::string sourceName;
@@ -36,6 +45,7 @@ public:
 	VST3Plugin(obs_source_t *sourceContext);
 	void loadEffectFromPath(std::string path);
 	void getSourceNames();
+	obs_audio_data *process(struct obs_audio_data *audio);
 
 	Steinberg::Vst::IAudioProcessor *getAudioProcessor()
 	{

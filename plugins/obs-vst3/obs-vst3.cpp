@@ -18,9 +18,6 @@ static bool open_editor_button_clicked(obs_properties_t *props,
 {
 	VST3Plugin *vst3Plugin = (VST3Plugin *)data;
 
-	// TODO
-	vst3Plugin->loadEffectFromPath(std::string("C:\\Program Files\\Common Files\\VST3\\OrilRiver.vst3"));
-
 	QMetaObject::invokeMethod(vst3Plugin, "openEditor");
 
 	return true;
@@ -32,9 +29,19 @@ static const char *vst3_name(void *unused)
 	return PLUG_IN_NAME;
 }
 
+static void vst3_update(void *data, obs_data_t *settings)
+{
+	VST3Plugin *vst3Plugin = (VST3Plugin *)data;
+
+	// TODO
+	vst3Plugin->loadEffectFromPath(std::string(
+		"C:\\Program Files\\Common Files\\VST3\\OrilRiver.vst3"));
+}
+
 static void *vst3_create(obs_data_t *settings, obs_source_t *filter)
 {
 	VST3Plugin *vst3Plugin = new VST3Plugin(filter);
+	vst3_update(vst3Plugin, settings);
 	return vst3Plugin;
 }
 
@@ -43,16 +50,11 @@ static void vst3_destroy(void *data)
 
 }
 
-static void vst3_update(void* data, obs_data_t* settings)
-{
-
-}
-
 static struct obs_audio_data *vst3_filter_audio(void *data,
 					       struct obs_audio_data *audio)
 {
 	VST3Plugin *vstPlugin = (VST3Plugin *)data;
-
+	vstPlugin->process(audio);
 	/*
 	 * OBS can only guarantee getting the filter source's parent and own name
 	 * in this call, so we grab it and return the results for processing
@@ -60,7 +62,7 @@ static struct obs_audio_data *vst3_filter_audio(void *data,
 	 */
 	vstPlugin->getSourceNames();
 
-	return NULL;
+	return audio;
 }
 
 static obs_properties_t *vst3_properties(void *data)

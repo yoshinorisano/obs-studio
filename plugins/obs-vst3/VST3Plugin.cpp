@@ -6,9 +6,11 @@
 #include <util/bmem.h>
 #include <util/platform.h>
 #include <windows.h>
+#include <assert.h>
 
 // TODO
 #include "pluginterfaces/base/ipluginbase.h"
+#include "pluginterfaces/vst/vsttypes.h"
 
 typedef bool(PLUGIN_API *InitDllProc)();
 
@@ -139,6 +141,9 @@ void VST3Plugin::loadEffect()
 			}
 		}
 	}
+
+	int maxchans = 2; // TODO
+	createChannelBuffers(maxchans);
 }
 
 void VST3Plugin::loadEffectFromPath(std::string path)
@@ -154,3 +159,102 @@ void VST3Plugin::getSourceNames()
 	filterName = obs_source_get_name(sourceContext);
 }
 
+void VST3Plugin::createChannelBuffers(size_t count)
+{
+	cleanupChannelBuffers();
+
+	int blocksize = BLOCK_SIZE;
+	numChannels = (std::max)((size_t)0, count);
+
+	if (numChannels > 0) {
+		inputs = (float **)malloc(sizeof(float *) * numChannels);
+		outputs = (float **)malloc(sizeof(float *) * numChannels);
+		channelrefs = (float **)malloc(sizeof(float *) * numChannels);
+		for (size_t channel = 0; channel < numChannels; channel++) {
+			inputs[channel] =
+				(float *)malloc(sizeof(float) * blocksize);
+			outputs[channel] =
+				(float *)malloc(sizeof(float) * blocksize);
+		}
+	}
+}
+
+void VST3Plugin::cleanupChannelBuffers()
+{
+	for (size_t channel = 0; channel < numChannels; channel++) {
+		if (inputs && inputs[channel]) {
+			free(inputs[channel]);
+			inputs[channel] = NULL;
+		}
+		if (outputs && outputs[channel]) {
+			free(outputs[channel]);
+			outputs[channel] = NULL;
+		}
+	}
+	if (inputs) {
+		free(inputs);
+		inputs = NULL;
+	}
+	if (outputs) {
+		free(outputs);
+		outputs = NULL;
+	}
+	if (channelrefs) {
+		free(channelrefs);
+		channelrefs = NULL;
+	}
+	numChannels = 0;
+}
+
+static void silenceChannel(float **channelData, size_t numChannels,
+			   long numFrames)
+{
+	for (size_t channel = 0; channel < numChannels; ++channel) {
+		for (long frame = 0; frame < numFrames; ++frame) {
+			channelData[channel][frame] = 0.0f;
+		}
+	}
+}
+
+obs_audio_data *VST3Plugin::process(struct obs_audio_data *audio)
+{
+	assert(audioProcessor != nullptr);
+	Steinberg::tresult result = 0;
+
+	silenceChannel(outputs, 2, 512);
+
+	float *adata[2] = {(float *)audio->data[0], (float *)audio->data[1]};
+
+	Steinberg::Vst::AudioBusBuffers inputBuffers;
+	inputBuffers.numChannels = 2;
+	inputBuffers.channelBuffers32 = (Steinberg::Vst::Sample32 **)adata;
+
+	Steinberg::Vst::AudioBusBuffers outputBuffers;
+	outputBuffers.numChannels = 2;
+	outputBuffers.channelBuffers32 = (Steinberg::Vst::Sample32 **)outputs;
+
+	Steinberg::Vst::ProcessData data;
+	data.processMode = Steinberg::Vst::ProcessModes::kRealtime;
+	data.symbolicSampleSize = Steinberg::Vst::SymbolicSampleSizes::kSample32;
+	data.numSamples = 512;
+	data.numInputs = 1;
+	data.numOutputs = 1;
+	data.inputs = &inputBuffers;
+	data.outputs = &outputBuffers;
+
+	result = audioProcessor->process(data);
+	if (result != Steinberg::kResultOk) {
+		return nullptr; // TODO
+	}
+	
+	for (size_t c = 0; c < 2; c++) {
+		if (audio->data[c]) {
+			for (size_t i = 0; i < 512; i++) {
+				adata[c][i] = outputs[c][i];
+			}
+		}
+	}
+	
+
+	return audio;
+}
