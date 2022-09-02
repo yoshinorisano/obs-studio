@@ -21,6 +21,11 @@ VST3Plugin::VST3Plugin(obs_source_t *sourceContext)
 {
 }
 
+VST3Plugin::~VST3Plugin()
+{
+	unloadEffect();
+}
+
 void VST3Plugin::openEditor()
 {
 	editorWidget = new EditorWidget(nullptr, this);
@@ -273,4 +278,17 @@ obs_audio_data *VST3Plugin::process(struct obs_audio_data *audio)
 	}
 
 	return audio;
+}
+
+void VST3Plugin::unloadEffect()
+{
+	unloadLibrary();
+}
+
+void VST3Plugin::unloadLibrary()
+{
+	if (dllHandle) {
+		FreeLibrary(dllHandle);
+		dllHandle = nullptr;
+	}
 }

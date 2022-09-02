@@ -47,7 +47,8 @@ static void *vst3_create(obs_data_t *settings, obs_source_t *filter)
 
 static void vst3_destroy(void *data)
 {
-
+	VST3Plugin *vst3Plugin = (VST3Plugin *)data;
+	vst3Plugin->deleteLater();
 }
 
 static struct obs_audio_data *vst3_filter_audio(void *data,

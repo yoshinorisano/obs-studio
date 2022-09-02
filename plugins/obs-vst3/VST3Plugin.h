@@ -38,12 +38,16 @@ class VST3Plugin : public QObject {
 
 	HINSTANCE dllHandle = nullptr;
 
+	void unloadLibrary();
+
 	Steinberg::Vst::IAudioProcessor *audioProcessor;
 	Steinberg::Vst::IEditController *editController;
 
 public:
 	VST3Plugin(obs_source_t *sourceContext);
+	~VST3Plugin();
 	void loadEffectFromPath(std::string path);
+	void unloadEffect();
 	void getSourceNames();
 	obs_audio_data *process(struct obs_audio_data *audio);
 
